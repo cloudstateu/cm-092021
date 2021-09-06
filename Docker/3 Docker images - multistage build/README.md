@@ -14,7 +14,7 @@ In this task you will bbuild web-client image using single stage building proces
 
 1. Enter the *web-client* directory:
 ```
-cd ECS_Deploy/web-client/
+cd apps/web-client/
 ```
 2. Build docker image
 ```
