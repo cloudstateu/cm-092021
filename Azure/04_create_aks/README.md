@@ -64,7 +64,7 @@ Jeśli w Azure Portal treści wyświetlane są w języku polskim sugerujemy zmia
 
     Dostęp do dodatkowej Resource Group zostanie nadany przez prowadzących przed ćwiczeniem w którym Resource Group będzie wykorzystywana.
 
-## Krok 3: Wywołaj komendę na klastrze
+## Krok 3: Wywołaj komendę na klastrze Kubernetes
 
 1. Otwórz Cloud Shell
 1. Na stronie szczegółów Twojej instancji usługi AKS kliknj przycisk _"Connect"_
