@@ -7,71 +7,68 @@
 
 ## LAB Overview
 
-#### In this lab you will build docker images using single and multistage building.
+In this lab you will create a docker image for an ASP.NET Core application using multistage process.
 
-## Task 1: Building web-client
-In this task you will bbuild web-client image using single stage building process.
+## Task 1: Build the image
 
-1. Enter the *web-client* directory:
-```
-cd apps/web-client/
-```
-2. Build docker image
-```
-docker build -t webclient:latest .
-```
-3. List available docker images:
-```
-docker images
-```
-Look into your docker image size
-![image size](./img/image_size.png)
+1. Go to `/app` directory and print the content of Dockerfile using `cat Dockerfile`
 
-It's small web api application and it takes 1.74GB!
+    ```bash
+    $ cat Dockerfile
 
-## Task 2: Building the image using multistage process.
+    FROM mcr.microsoft.com/dotnet/sdk:3.1 as build
 
-6. Remove your current *Dockerfile**
-```
-rm Dockerfile
-```
-7. Use multistage Dockerfile to build image
-```
-mv Dockerfile_multi Dockerfile
-```
-8. Look into the file. 
-We're using two steps building now. First we build our app using microsoft/dotnet:2.2-sdk image.
+    WORKDIR /app
 
-```
-FROM microsoft/dotnet:2.2-sdk AS build
-WORKDIR /app
+    COPY *.csproj ./
+    RUN dotnet restore
 
-COPY web-client.csproj .
-RUN dotnet restore web-client.csproj
+    COPY . ./
+    RUN dotnet build -c Release -o out
 
-COPY . .
-RUN dotnet publish -c Release -o out
-```
-Then, in the second step, bbuild atifacts are used together with smaller runtime image to create final docker image.
-```
-FROM microsoft/dotnet:2.2-aspnetcore-runtime AS runtime
-WORKDIR /app
-COPY --from=build /app/out ./
-```
-9. Build docker image once again using new Dockerfile
-```
-docker build -t webclient:latest .
-```
-10. List available docker images:
-```
-docker images
-```
-Now your image should be much smaller
-![small image](./img/image_size_small.png)
+    FROM mcr.microsoft.com/dotnet/aspnet:3.1
+    WORKDIR /app
+    COPY --from=build /app/out .
 
+    CMD ["dotnet", "Sample.dll"]
+    ```
+
+    See how you using `FROM` keyword twice. `FROM mcr.microsoft.com/dotnet/sdk:3.1 as build` specify the container image that will be used for building .NET application and be deleted afterwards. This image has all dependencies required to build a .NET application. 
+    
+    The `FROM mcr.microsoft.com/dotnet/aspnet:3.1` specify container that will run your application. The `aspnet:3.1` container has only the runtime required for running ASP.NET Core 3.1 applications. That means there is no `MSBuild` tool, so you won't build your application using just this image - you need to implement multistage process.
+
+    Using multistage process, the application artifacts are copied from the build container (`sdk:3.1`) to the runtime container (`aspnet:3.1`).
+
+1. Create an image using `docker build`
+
+    ```bash
+    docker build -t sample:1.0.0 .
+    ```
+
+1. List the container images that you have
+
+    ```bash
+    docker images
+    ```
+
+1. Run your application using `docker run`
+
+    ```bash
+    docker run -p 8080:80 sample:1.0.0
+    ```
+
+1. Make a request to application using `curl`
+
+    ```bash
+    $ curl localhost:8080
+
+    Hello World
+    ```
+
+1. Stop the application using `Ctrl-C`
 
 ## END LAB
 
 <br><br>
 
-<center><p>&copy; 2019 Chmurowisko Sp. z o.o.<p></center>
+<center><p>&copy; 2021 Chmurowisko Sp. z o.o.<p></center>
